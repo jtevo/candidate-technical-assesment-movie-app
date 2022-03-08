@@ -69,7 +69,6 @@ public class SQLCrewRepository implements CrewRepository {
         this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
     }
 
-
     @Override
     public Collection<Crew> everything() {
         return jdbcTemplate.query(QUERY_ALL_CREW, new CrewRowMapper(personRepository, movieRepository));
@@ -88,16 +87,16 @@ public class SQLCrewRepository implements CrewRepository {
         final Set<MovieRoleTuple> jobs = new HashSet<>();
         result.setJobs(jobs);
 
-
         final Map<String, Object> varsMap = new HashMap<String, Object>();
         varsMap.put("personid", personId);
-
 
         final SqlRowSet rs = jdbcTemplate.queryForRowSet(QUERY_CREW_FOR_PERSON, varsMap);
         while (rs.next()) {
             try {
                 final MovieRoleTuple current = new MovieRoleTuple();
-                final long movieId = rs.getInt("movie");
+                // fix for Bug 1701
+                final long movieId = rs.getLong("movie");
+                // end of fix
                 LOG.info("finding movieid={}", movieId);
                 final Optional<Movie> movie = movieRepository.findById(movieId);
 
@@ -108,7 +107,7 @@ public class SQLCrewRepository implements CrewRepository {
                 }
             } catch (Exception se) {
                 LOG.debug("failed to find movie", se);
-                //move on to the next movie
+                // move on to the next movie
             }
         }
 
@@ -129,10 +128,8 @@ public class SQLCrewRepository implements CrewRepository {
         final Set<PersonRoleTuple> jobs = new HashSet<>();
         result.setCrew(jobs);
 
-
         final Map<String, Object> varsMap = new HashMap<String, Object>();
         varsMap.put("movieid", movieId);
-
 
         final SqlRowSet rs = jdbcTemplate.queryForRowSet(QUERY_CREW_FOR_MOVIE, varsMap);
         while (rs.next()) {
@@ -149,11 +146,32 @@ public class SQLCrewRepository implements CrewRepository {
                 }
             } catch (Exception se) {
                 LOG.debug("failed to find person", se);
-                //move on to the next person
+                // move on to the next person
             }
         }
 
         return result;
+
+    }
+
+    // FEATURE-1138
+    @Override
+    public Collection<Person> coworkersFor(Long personId) {
+
+        final Resume result = moviesFor(personId);
+        Collection<MovieRoleTuple> movies = result.getJobs();
+        Collection<Person> coworkers = new HashSet<>();
+        for (MovieRoleTuple movie : movies) {
+            Credits credits = peopleFor(movie.getMovie().getId());
+            Collection<PersonRoleTuple> persons = credits.getCrew();
+            for (PersonRoleTuple personRoleTuple : persons) {
+                Person person = personRoleTuple.getPerson();
+                if (person.getId() != personId)
+                    coworkers.add(person);
+            }
+        }
+
+        return coworkers;
 
     }
 }

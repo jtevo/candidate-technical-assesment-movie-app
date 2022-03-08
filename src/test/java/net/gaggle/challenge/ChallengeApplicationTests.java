@@ -30,11 +30,10 @@ class ChallengeApplicationTests {
 		assertNotNull(controller);
 	}
 
-
 	@Test
 	public void findAMovieById() throws Exception {
-		this.mockMvc.perform(get("/movies/id/2")).andDo(print()).andExpect(status().isOk())
-				.andExpect(content().string(containsString("Fake")));
+		this.mockMvc.perform(get("/movies/id/2147483640")).andDo(print()).andExpect(status().isOk())
+				.andExpect(content().string(containsString("Star")));
 	}
 
 	@Test
@@ -67,6 +66,12 @@ class ChallengeApplicationTests {
 	public void findAPersonById() throws Exception {
 		this.mockMvc.perform(get("/crew/person/2")).andDo(print()).andExpect(status().isOk())
 				.andExpect(content().string(containsString("Kane")));
+	}
+
+	@Test
+	public void findCoworkersById() throws Exception {
+		this.mockMvc.perform(get("/crew/coworkers/1")).andDo(print()).andExpect(status().isOk())
+				.andExpect(content().string(containsString("Ford")));
 	}
 
 }

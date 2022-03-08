@@ -19,7 +19,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Supplier;
 
 /**
- * Simple implementation that periodically flushes the audit logs to a disk file.  ( Yeah it's sorta lame we're
+ * Simple implementation that periodically flushes the audit logs to a disk
+ * file. ( Yeah it's sorta lame we're
  * doing it to /var/tmp, but we gotta draw the example line somewhere right? )
  */
 @Component
@@ -39,19 +40,21 @@ public class FileRecordingAuditLog implements AuditLog {
     private File targetFile;
 
     /**
-     * Creates the target location.  For now this is temp
+     * Creates the target location. For now this is temp
+     * 
      * @throws IOException
      */
     public FileRecordingAuditLog() throws IOException {
         targetFile = Files.createTempFile("codeTest", ".txt").toFile();
-        LOG.info("Audit Logs will be available at {}", targetFile.getAbsolutePath() );
+        LOG.info("Audit Logs will be available at {}", targetFile.getAbsolutePath());
     }
 
-
     /**
-     * Decorates the supplied action by capturing and tracing execution times and actions for target logs.
+     * Decorates the supplied action by capturing and tracing execution times and
+     * actions for target logs.
+     * 
      * @param actionName helpful name to give the operation.
-     * @param action the actual controller operation.
+     * @param action     the actual controller operation.
      * @param <T>
      * @return value that the action returned unmodified.
      */
@@ -76,7 +79,7 @@ public class FileRecordingAuditLog implements AuditLog {
                 error,
                 exception));
 
-        //Rethrow after catching.
+        // Rethrow after catching.
         if (exception != null) {
             throw exception;
         }
@@ -88,14 +91,14 @@ public class FileRecordingAuditLog implements AuditLog {
      * Send the pending audit log messages to disk and clear the queue.
      * Flushes every 30 seconds.
      */
-    @Scheduled(fixedRate =  30_000)
+    @Scheduled(fixedRate = 30_000)
     public void flushToDisk() throws IOException {
         LOG.info("Flushing Audit Log");
-        //Make a copy before we flush to disk for thread safety
+        // Make a copy before we flush to disk for thread safety
         List<AuditInfo> itemsToFlushToDisk = new ArrayList<>(auditLog);
         try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(targetFile))) {
-            new ArrayList<>(auditLog).stream()
-                    .forEach( (auditInfo) -> {
+            itemsToFlushToDisk.stream()
+                    .forEach((auditInfo) -> {
                         try {
                             osw.write(auditInfo.toString());
                             osw.write('\n');
@@ -103,20 +106,18 @@ public class FileRecordingAuditLog implements AuditLog {
                             LOG.error("Error writing audit log to disk!", e);
                         }
                     });
-
         }
-
     }
 
     /**
-     * Data structure that holds all the bits.  toString() will return  a CSV formatted version of this operation.
+     * Data structure that holds all the bits. toString() will return a CSV
+     * formatted version of this operation.
      */
     static class AuditInfo {
         private final String action;
         private final long timeToComplete;
         private final boolean error;
         private final Throwable t;
-
 
         public AuditInfo(String action, long timeToComplete, boolean error, Throwable t) {
             this.action = action;

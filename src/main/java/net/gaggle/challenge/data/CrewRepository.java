@@ -2,6 +2,7 @@ package net.gaggle.challenge.data;
 
 import net.gaggle.challenge.model.Credits;
 import net.gaggle.challenge.model.Crew;
+import net.gaggle.challenge.model.Person;
 import net.gaggle.challenge.model.Resume;
 
 import java.util.Collection;
@@ -10,7 +11,6 @@ import java.util.Collection;
  * A repository that knows about the crews for movies.
  */
 public interface CrewRepository {
-
 
     /**
      * Returns every Crew relation in the database.
@@ -35,5 +35,12 @@ public interface CrewRepository {
      */
     Credits peopleFor(Long movieId);
 
+    /**
+     * returns all the coworkers who worked with the given person.
+     *
+     * @param personId The id of the person we care about.
+     * @return a Collection of all the persons who worked with the given person
+     */
+    Collection<Person> coworkersFor(Long personId);
 
 }

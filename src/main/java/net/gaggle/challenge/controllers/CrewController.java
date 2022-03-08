@@ -3,6 +3,7 @@ package net.gaggle.challenge.controllers;
 import net.gaggle.challenge.data.CrewRepository;
 import net.gaggle.challenge.model.Credits;
 import net.gaggle.challenge.model.Crew;
+import net.gaggle.challenge.model.Person;
 import net.gaggle.challenge.model.Resume;
 import net.gaggle.challenge.services.AuditLog;
 import org.slf4j.Logger;
@@ -21,7 +22,6 @@ import java.util.Collection;
 @RestController
 @RequestMapping("crew")
 public class CrewController {
-
 
     /**
      * LOGGER.
@@ -52,7 +52,6 @@ public class CrewController {
         });
     }
 
-
     /**
      * Return all the crew for a single movie.
      *
@@ -61,18 +60,21 @@ public class CrewController {
      */
     @GetMapping("/movie/{movieId}")
     public Credits peopleFor(@PathVariable final Long movieId) {
-            return auditLog.auditAction("/crew/movie/by-id", () -> {
-                LOG.info("here come all the people in movie {}", movieId);
-                //final Collection<Crew> results = crewRepository.crewFor(movieId);
-                final Credits results = crewRepository.peopleFor(movieId);
-                return results;
-            });
+        return auditLog.auditAction("/crew/movie/by-id", () -> {
+            LOG.info("here come all the people in movie {}", movieId);
+            // final Collection<Crew> results = crewRepository.crewFor(movieId);
+            final Credits results = crewRepository.peopleFor(movieId);
+            return results;
+        });
     }
 
     /**
-     * Returns a person's {@link Resume}, listing all of the {@link net.gaggle.challenge.model.Movie}s they took port in
-     * and their {@link net.gaggle.challenge.model.CrewRole} in each movie.  With a Resume, the Person is only included once for the entire
-     * response, instead of one for each movie, as would be the case with a collection of {@link Crew} obects.
+     * Returns a person's {@link Resume}, listing all of the
+     * {@link net.gaggle.challenge.model.Movie}s they took port in
+     * and their {@link net.gaggle.challenge.model.CrewRole} in each movie. With a
+     * Resume, the Person is only included once for the entire
+     * response, instead of one for each movie, as would be the case with a
+     * collection of {@link Crew} obects.
      * <p>
      *
      * @param personId the unique ID of the person we want to know about.
@@ -87,5 +89,25 @@ public class CrewController {
         });
     }
 
+    /**
+     * Returns a person's {@link Resume}, listing all of the
+     * {@link net.gaggle.challenge.model.Movie}s they took port in
+     * and their {@link net.gaggle.challenge.model.CrewRole} in each movie. With a
+     * Resume, the Person is only included once for the entire
+     * response, instead of one for each movie, as would be the case with a
+     * collection of {@link Crew} obects.
+     * <p>
+     *
+     * @param personId the unique ID of the person we want to know about.
+     * @return a fully-populated Resume.
+     */
+    @GetMapping("/coworkers/{personId}")
+    public Collection<Person> coworkersFor(@PathVariable final Long personId) {
+        return auditLog.auditAction("/crew/coworkers/by-id", () -> {
+            LOG.info("here come all the coworkers for person {}", personId);
+            final Collection<Person> results = crewRepository.coworkersFor(personId);
+            return results;
+        });
+    }
 
 }
